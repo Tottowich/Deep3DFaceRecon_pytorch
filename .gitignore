@@ -1,1 +1,6 @@
 venv/
+*.obj
+*.mat
+*.pyd
+*.pth
+*.mat
