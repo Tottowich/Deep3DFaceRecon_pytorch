@@ -16,6 +16,8 @@ from data.flist_dataset import default_flist_reader
 from scipy.io import loadmat, savemat
 import matplotlib.pyplot as plt
 from mtcnn import MTCNN
+import cv2
+import dlib
 
 def get_data_path(root='examples'):
     
@@ -49,6 +51,7 @@ def read_data(im_path, lm3d_std, to_tensor=True):
     if to_tensor:
         im = torch.tensor(np.array(im)/255., dtype=torch.float32).permute(2, 0, 1).unsqueeze(0)
         lm = torch.tensor(lm).unsqueeze(0)
+        print(im.shape, lm.shape)
     return im, lm
 
 def main(rank, opt, name='examples'):

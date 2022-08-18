@@ -14,7 +14,7 @@ import pywavefront
 import cv2
 
 # Create absolute path from this module
-file_abspath = os.path.join(os.path.dirname(__file__), './checkpoints/FaceReconTorch/results/epoch_20_000000/badlight.obj')
+file_abspath = os.path.join(os.path.dirname(__file__), './checkpoints/FaceReconTorch/results/epoch_20_000000/badLightingWoman.obj')
 
 rotation_x = 0
 rotation_y = 0
@@ -76,9 +76,9 @@ def update(dt):
     global rotation_y
     global direction_x
     global direction_y
-    rotation_x += direction_x*90*dt
+    rotation_x += direction_x*45*dt
     #rotation_y += direction_y*90*dt
-    if abs(rotation_x) > 90.0:
+    if abs(rotation_x) > 45:
         direction_x = -direction_x
     if abs(rotation_y) > 720.0:
         direction_y = -direction_y

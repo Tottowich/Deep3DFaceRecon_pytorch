@@ -4,3 +4,7 @@ venv/
 *.pyd
 *.pth
 *.mat
+*.png
+*.jpg
+*.jpeg
+*.gif
