@@ -15,7 +15,7 @@ import torch
 from data.flist_dataset import default_flist_reader
 from scipy.io import loadmat, savemat
 import matplotlib.pyplot as plt
-from mtcnn import MTCNN
+#from mtcnn import MTCNN
 import cv2
 import dlib
 
@@ -27,19 +27,24 @@ def get_data_path(root='examples'):
 
     return im_path#, lm_path
 
+detector = dlib.get_frontal_face_detector() # Face Detector for now. Change to google vision API later.
+predictor = dlib.shape_predictor("./checkpoints/landmarkDetection/shape_predictor_68_face_landmarks.dat")
 def read_data(im_path, lm3d_std, to_tensor=True):
     # to RGB 
     im = Image.open(im_path).convert('RGB')
-    detector = MTCNN()
-    faces = detector.detect_faces(np.array(im))
+    faces = detector(np.array(im))
     if len(faces) == 0:
         return None, None
     face = faces[0]
-    nose, mouth_right, right_eye, left_eye, mouth_left = face['keypoints'].values()
-    lm = np.array([nose,mouth_right,right_eye,left_eye,mouth_left],dtype=np.float32)
-    # print(lm.shape)
-    # exit()
-    # print(nose, mouth_right, right_eye, left_eye, mouth_left)
+    landmarks = predictor(np.array(im), face)
+    nose = (landmarks.part(30).x, landmarks.part(30).y)
+    left_eye = (landmarks.part(40).x, landmarks.part(40).y)
+    right_eye = (landmarks.part(47).x, landmarks.part(47).y)
+    mouth_left = (landmarks.part(48).x, landmarks.part(48).y)
+    mouth_right = (landmarks.part(54).x, landmarks.part(54).y)
+    #nose, mouth_right, right_eye, left_eye, mouth_left = face['keypoints'].values()
+    lm = np.array([nose,mouth_right,right_eye,left_eye,mouth_left],dtype=np.float32) # (5,2)
+    # (nose, mouth_right, right_eye, left_eye, mouth_left)
     W,H = im.size
     # exit()
     # lm2 = np.loadtxt(lm_path).astype(np.float32)
@@ -70,12 +75,10 @@ def main(rank, opt, name='examples'):
     for i in range(len(im_path)):
         print(i, im_path[i])
         img_name = im_path[i].split(os.path.sep)[-1].replace('.png','').replace('.jpg','')
-        # if not os.path.isfile(lm_path[i]):
-        #     continue
         im_tensor, lm_tensor = read_data(im_path[i], lm3d_std)
-        plt.imshow(im_tensor[0].permute(1,2,0).numpy())
-        plt.scatter(lm_tensor[0,:,0], lm_tensor[0,:,1])
-        plt.show()
+        # plt.imshow(im_tensor[0].permute(1,2,0).numpy())
+        # plt.scatter(lm_tensor[0,:,0], lm_tensor[0,:,1])
+        # plt.show()
         data = {
             'imgs': im_tensor,
             'lms': lm_tensor
