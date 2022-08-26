@@ -14,7 +14,8 @@ import pywavefront
 import cv2
 
 # Create absolute path from this module
-file_abspath = os.path.join(os.path.dirname(__file__), './checkpoints/FaceReconTorch/results/epoch_20_000000/badLightingWoman.obj')
+file_abspath = os.path.join(os.path.dirname(__file__), './checkpoints/FaceReconTorch/results/testData/epoch_latest_000000/000031.obj')
+# file_abspath = os.path.join(os.path.dirname(__file__), '../HairNet/hairModels/hairstyles/head_model.obj')
 
 rotation_x = 0
 rotation_y = 0

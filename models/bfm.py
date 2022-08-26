@@ -271,7 +271,7 @@ class ParametricFaceModel:
             'gamma': gammas,
             'trans': translations
         }
-    def compute_for_render(self, coeffs):
+    def compute_for_render(self, coeffs,center_front):
         """
         Return:
             face_vertex     -- torch.tensor, size (B, N, 3), in camera coordinate
@@ -279,15 +279,17 @@ class ParametricFaceModel:
             landmark        -- torch.tensor, size (B, 68, 2), y direction is opposite to v direction
         Parameters:
             coeffs          -- torch.tensor, size (B, 257)
+            center_front    -- bool, whether to center and straighten the face
         """
         coef_dict = self.split_coeff(coeffs)
         face_shape = self.compute_shape(coef_dict['id'], coef_dict['exp'])
         rotation = self.compute_rotation(coef_dict['angle'])
 
-
-        face_shape_transformed = self.transform(face_shape, rotation, coef_dict['trans'])
-        face_vertex = self.to_camera(face_shape_transformed)
-        
+        if not center_front:
+            face_shape_transformed = self.transform(face_shape, rotation, coef_dict['trans'])
+            face_vertex = self.to_camera(face_shape_transformed)
+        else:
+            face_vertex = face_shape
         face_proj = self.to_image(face_vertex)
         landmark = self.get_landmarks(face_proj)
 

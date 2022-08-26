@@ -33,6 +33,7 @@ class FaceReconModel(BaseModel):
         parser.add_argument('--camera_d', type=float, default=10.)
         parser.add_argument('--z_near', type=float, default=5.)
         parser.add_argument('--z_far', type=float, default=15.)
+        parser.add_argument('--center_front', type=bool, default=False)
 
         if is_train:
             # training parameters
@@ -85,7 +86,7 @@ class FaceReconModel(BaseModel):
         self.visual_names = ['output_vis']
         self.model_names = ['net_recon']
         self.parallel_names = self.model_names + ['renderer']
-
+        self.camera_d = opt.camera_d
         self.net_recon = networks.define_net_recon(
             net_recon=opt.net_recon, use_last_fc=opt.use_last_fc, init_path=opt.init_path
         )
@@ -134,7 +135,7 @@ class FaceReconModel(BaseModel):
         output_coeff = self.net_recon(self.input_img)
         self.facemodel.to(self.device)
         self.pred_vertex, self.pred_tex, self.pred_color, self.pred_lm = \
-            self.facemodel.compute_for_render(output_coeff)
+            self.facemodel.compute_for_render(output_coeff,self.opt.center_front)
         self.pred_mask, _, self.pred_face = self.renderer(
             self.pred_vertex, self.facemodel.face_buf, feat=self.pred_color)
         
@@ -203,11 +204,23 @@ class FaceReconModel(BaseModel):
             self.output_vis = torch.tensor(
                     output_vis_numpy / 255., dtype=torch.float32
                 ).permute(0, 3, 1, 2).to(self.device)
-
+    def center_mesh(self):
+        self.pred_vertex = self.pred_vertex - self.pred_vertex.mean(dim=1, keepdim=True)
+    def rotate_mesh(self):
+        self.pred_vertex = self.pred_vertex @ self.rotation_matrix()
+        #self.pred_vertex -= self.pred_coeffs_dict["trans"]
+        #print(f"Translation: {self.pred_coeffs_dict['trans']}")
+    def rotation_matrix(self,):
+        angles = self.pred_coeffs_dict["angle"][0].cpu().numpy()
+        #print(angles.shape)
+        print(f"type: {type(angles)}")
+        rot = torch.Tensor(np.array([[np.cos(-angles[0]),0,0],[0,np.sin(-angles[1]),0],[0,0,np.cos(-angles[2])]])).to(self.device)
+        return rot
     def save_mesh(self, name):
 
         recon_shape = self.pred_vertex  # get reconstructed shape
-        recon_shape[..., -1] = 10 - recon_shape[..., -1] # from camera space to world space
+        print(f"{recon_shape.shape}")
+        #recon_shape[..., -1] = self.camera_d - recon_shape[..., -1] # from camera space to world space
         recon_shape = recon_shape.cpu().numpy()[0]
         recon_color = self.pred_color
         recon_color = recon_color.cpu().numpy()[0]

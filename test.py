@@ -27,7 +27,7 @@ def get_data_path(root='examples'):
 
     return im_path#, lm_path
 
-detector = dlib.get_frontal_face_detector() # Face Detector for now. Change to google vision API later.
+detector = dlib.get_frontal_face_detector() # Face Detector for now. Maybe change to google vision API later.
 predictor = dlib.shape_predictor("./checkpoints/landmarkDetection/shape_predictor_68_face_landmarks.dat")
 def read_data(im_path, lm3d_std, to_tensor=True):
     # to RGB 
@@ -56,7 +56,6 @@ def read_data(im_path, lm3d_std, to_tensor=True):
     if to_tensor:
         im = torch.tensor(np.array(im)/255., dtype=torch.float32).permute(2, 0, 1).unsqueeze(0)
         lm = torch.tensor(lm).unsqueeze(0)
-        print(im.shape, lm.shape)
     return im, lm
 
 def main(rank, opt, name='examples'):
@@ -90,10 +89,13 @@ def main(rank, opt, name='examples'):
             save_results=True, count=i, name=img_name, add_image=False)
         path = os.path.join(visualizer.img_dir, name.split(os.path.sep)[-1], 'epoch_%s_%06d'%(opt.epoch, 0),img_name+'.obj')
         print(path)
+        #model.rotate_mesh()
+        model.center_mesh()
+        #model.rotate_mesh()
         model.save_mesh(path) # save reconstruction meshes
         model.save_coeff(os.path.join(visualizer.img_dir, name.split(os.path.sep)[-1], 'epoch_%s_%06d'%(opt.epoch, 0),img_name+'.mat')) # save predicted coefficients
 
-if __name__ == '__main__':
+if __name__ == '__main__': # python test.py --img_folder testData --name FaceReconTorch
     opt = TestOptions().parse()  # get test options
     main(0, opt,opt.img_folder)
     

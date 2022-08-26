@@ -4,6 +4,7 @@
                 bfm_model: BFM_model_front.mat           
                  camera_d: 10.0                          
                    center: 112.0                         
+             center_front: False                         
           checkpoints_dir: ./checkpoints                 
              dataset_mode: None                          
                  ddp_port: 12355                         
